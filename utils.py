@@ -43,6 +43,11 @@ def values(data, index):
     return resp
 
 
+def accuracy(confusion_matrix):
+    return (confusion_matrix[0][0] + confusion_matrix[1][1]) / (
+                confusion_matrix[0][0] + confusion_matrix[0][1] + confusion_matrix[1][0] + confusion_matrix[1][1])
+
+
 def precision(confusion_matrix):
     return confusion_matrix[1][1] / (confusion_matrix[1][1] + confusion_matrix[0][1])
 
@@ -55,7 +60,7 @@ def f1_score(precision_value, recall_value):
     return 2 * (precision_value * recall_value) / (precision_value + recall_value)
 
 
-def metrics(precision_1,recall_1,f1_score_1, confusion_matrix_2):
+def metrics(precision_1, recall_1, f1_score_1, confusion_matrix_2):
     precision_2 = precision(confusion_matrix_2)
     recall_2 = recall(confusion_matrix_2)
     f1_score_2 = f1_score(precision_2, recall_2)
@@ -64,9 +69,9 @@ def metrics(precision_1,recall_1,f1_score_1, confusion_matrix_2):
 
 def cross_validation(X, y, model):
     cv = StratifiedKFold(n_splits=5, random_state=42, shuffle=False)
-    precision_1 =0
-    recall_1 =0
-    f1_score_1 =0
+    precision_1 = 0
+    recall_1 = 0
+    f1_score_1 = 0
     for train_index, test_index in cv.split(X, y):
         X_train, X_test, y_train, y_test = \
             values(X, train_index), values(X, test_index), values(y, train_index), values(y, test_index)
@@ -75,12 +80,12 @@ def cross_validation(X, y, model):
         print("predicting")
         predictions = model.predict(X_test)
         matrix = confusion_matrix(y_test, predictions)
-        if precision_1 ==0 and recall_1 ==0 and f1_score_1 ==0:
+        if precision_1 == 0 and recall_1 == 0 and f1_score_1 == 0:
             precision_1 = precision(matrix)
             recall_1 = recall(matrix)
-            f1_score_1 = f1_score(precision_1,recall_1)
+            f1_score_1 = f1_score(precision_1, recall_1)
         else:
-            precision_1,recall_1,f1_score_1 = metrics(precision_1,recall_1,f1_score_1, matrix)
-    print("precision: "+str(np.round(precision_1,2)))
-    print("recall: "+str(np.round(recall_1,2)))
-    print("f1 score: "+str(np.round(f1_score_1,2)))
+            precision_1, recall_1, f1_score_1 = metrics(precision_1, recall_1, f1_score_1, matrix)
+    print("precision: " + str(np.round(precision_1, 2)))
+    print("recall: " + str(np.round(recall_1, 2)))
+    print("f1 score: " + str(np.round(f1_score_1, 2)))

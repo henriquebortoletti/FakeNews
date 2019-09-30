@@ -7,5 +7,5 @@ from utils import cross_validation
 #tunnning2: https://towardsdatascience.com/hyperparameter-tuning-the-random-forest-in-python-using-scikit-learn-28d2aa77dd74
 #pesquisar técnicas de tunning
 X, y = get_data_for_model()
-rf = RandomForestClassifier(n_estimators=1, random_state=42, n_jobs=-1)
+rf = RandomForestClassifier(n_estimators=50, random_state=42, n_jobs=-1)
 cross_validation(X,y, rf)
