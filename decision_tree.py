@@ -49,7 +49,7 @@ class DecisionTree:
             tree.value = FAKE_NEWS
             tree.frequency = len(training)
             return tree
-        elif len(removed_features) == (len(training[1]) - 1) or len(training) <= 576:
+        elif len(removed_features) == (len(training[1]) - 1) or len(training) <= 576:#500 samples 0.77 de precisao
             if negative > 0.5:
                 tree.value = TRUE_NEWS
                 tree.frequency = len(training)
@@ -80,14 +80,11 @@ class DecisionTree:
         return tree
 
     def fit(self, training, label):
-        self.i = 0
-        init = time.time()
+        self.i = 1
         self.binaryTree = None
         removed_features =[]
         self.binaryTree = self.build_tree(training, label,removed_features)
-        end = time.time()
         print(self.i)
-        print(end - init)
 
     def predict(self, training):
         predictions = []
@@ -99,7 +96,8 @@ class DecisionTree:
 X, y = get_data_for_model()
 print("start")
 init = time.time()
-# clf_gini = DecisionTreeClassifier(criterion="gini")
-cross_validation(X, y, DecisionTree())
+clf = DecisionTreeClassifier(criterion="gini")
+#clf = DecisionTree()
+cross_validation(X, y, clf)
 end = time.time() - init
 print(end)
