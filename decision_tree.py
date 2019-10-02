@@ -19,10 +19,14 @@ class DecisionTree:
     "Decision Tree algorithm"
     tree = None
 
-    def create_training_label(self, training, label, index_list):
-        training_aux = np.array(training)[index_list]
-        label_aux = np.array(label)[index_list]
-        return training_aux, label_aux
+    def create_training_label(self, training, label, index):
+        has_word_index = np.nonzero(training[:, index])[0]
+        has_not_word_index = np.where(training[:, 0] == 0)[0]
+        has_word_training = training[has_word_index]
+        has_word_label = label[has_word_index]
+        has_not_word_training = training[has_not_word_index]
+        has_not_word_label = label[has_not_word_index]
+        return has_word_training, has_word_label, has_not_word_training, has_not_word_label
 
     def build_tree(self, training, label, removed_features=None):
         if removed_features is None:
@@ -45,9 +49,8 @@ class DecisionTree:
                 tree.value = FAKE_NEWS
                 tree.frequency = label.shape[0] - major_class
             return tree
-        gini_value, word, has_word_list, has_not_word_list = calculate_gini(training, label, removed_features)
-        hwt, hwl = self.create_training_label(training, label, has_word_list)
-        hnwt, hnwl = self.create_training_label(training, label, has_not_word_list)
+        gini_value, word = calculate_gini(training, label, removed_features)
+        hwt, hwl, hnwt, hnwl = self.create_training_label(training, label, word)
         removed_features.append(word)
         if len(hwt) <= 2 or len(hnwt) <= 100:
             if major_class >= len(label) / 2:
@@ -65,10 +68,10 @@ class DecisionTree:
         return tree
 
     def fit(self, training, label):
-        init =time.time()
+        init = time.time()
         self.tree = self.build_tree(np.array(training), np.array(label))
         end = time.time()
-        print(end-init)
+        print(end - init)
 
     def predict(self, training):
         predictions = []

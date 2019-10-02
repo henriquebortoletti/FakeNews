@@ -23,8 +23,9 @@ meta_true_info, meta_false_info = meta_information()
 full_true_info, full_false_info = full_text()
 norm_true_info, norm_false_info = norm_text()
 stop_words = set(stopwords.words('portuguese') + list(punctuation))
-FAKE_NEWS =1
-TRUE_NEWS =0
+FAKE_NEWS = 1
+TRUE_NEWS = 0
+
 
 def word_filter(word):
     word = re.sub(r'[^\w\s]', '', word).lower()
@@ -95,32 +96,30 @@ def cross_validation(X, y, model):
     print("recall: " + str(np.round(recall_1, 2)))
     print("f1 score: " + str(np.round(f1_score_1, 2)))
 
-#@jit(nopython=True)
-def calculate_gini(training,label,removed_features):
+
+# @jit(nopython=True)
+def calculate_gini(training, label, removed_features):
     gini_index = 999
-    has_word_list = None
-    has_not_word_list = None
     index = -1
     for feature in range(len(training[0])):
         if feature in removed_features:
             continue
-        has_word_aux = np.nonzero(training[:,feature])[0]
-        has_not_word_aux = np.where(training[:,0] == 0)[0]
-        has_word_positive = np.count_nonzero(np.array(label)[has_word_aux]) +1
-        has_word_negative = len(has_word_aux) - has_word_positive +1
-        has_not_word_positive = np.count_nonzero(np.array(label)[has_not_word_aux]) +1
-        has_not_word_negative = len(has_not_word_aux) - has_not_word_positive+1
+        has_word_aux = np.nonzero(training[:, feature])[0]
+        has_word_positive = np.count_nonzero(label[has_word_aux]) + 1
+        has_word_aux = len(has_word_aux)
+        has_not_word_aux = np.where(training[:, 0] == 0)[0]
+        has_not_word_positive = np.count_nonzero(label[has_not_word_aux]) + 1
+        has_not_word_aux = len(has_not_word_aux)
+        has_not_word_negative = has_not_word_aux - has_not_word_positive + 1
+        has_word_negative = has_word_aux - has_word_positive + 1
         has_word_total = has_word_positive + has_word_negative
         has_not_word_total = has_not_word_positive + has_not_word_negative
         total = has_word_total + has_not_word_total
         gini_has_word = 1 - ((has_word_positive / has_word_total) ** 2 + (has_word_negative / has_word_total) ** 2)
         gini_has_not_word = 1 - ((has_not_word_positive / has_not_word_total) ** 2 +
-                                 (has_not_word_negative / has_not_word_total) ** 2)
+        (has_not_word_negative / has_not_word_total) ** 2)
         gini = (has_word_total / total) * gini_has_word + (has_not_word_total / total) * gini_has_not_word
         if gini_index > gini:
             gini_index = gini
-            has_not_word_list = has_not_word_aux
-            has_word_list = has_word_aux
             index = feature
-    return gini_index, index, has_word_list, has_not_word_list
-
+    return gini_index, index
