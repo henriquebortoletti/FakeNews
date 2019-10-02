@@ -87,6 +87,9 @@ def cross_validation(X, y, model):
             precision_1 = precision(matrix)
             recall_1 = recall(matrix)
             f1_score_1 = f1_score(precision_1, recall_1)
+            print("precision: " + str(np.round(precision_1, 2)))
+            print("recall: " + str(np.round(recall_1, 2)))
+            print("f1 score: " + str(np.round(f1_score_1, 2)))
         else:
             precision_1, recall_1, f1_score_1 = metrics(precision_1, recall_1, f1_score_1, matrix)
             print("precision: " + str(np.round(precision_1, 2)))
@@ -98,26 +101,28 @@ def cross_validation(X, y, model):
 
 
 # @jit(nopython=True)
-def calculate_gini(training, label, removed_features):
+def calculate_gini(training_aux, label, removed_features):
     gini_index = 999
-    index = -1
-    for feature in range(len(training[0])):
+    index = 0
+    for feature in range(training_aux.shape[1]):
         if feature in removed_features:
             continue
-        has_word_aux = np.nonzero(training[:, feature])[0]
-        has_word_positive = np.count_nonzero(label[has_word_aux]) + 1
-        has_word_aux = len(has_word_aux)
-        has_not_word_aux = np.where(training[:, 0] == 0)[0]
-        has_not_word_positive = np.count_nonzero(label[has_not_word_aux]) + 1
-        has_not_word_aux = len(has_not_word_aux)
-        has_not_word_negative = has_not_word_aux - has_not_word_positive + 1
-        has_word_negative = has_word_aux - has_word_positive + 1
+        has_word_aux = np.nonzero(training_aux[:, feature])[0]
+        has_word_positive = np.count_nonzero(label[has_word_aux])
+        has_word_aux = has_word_aux.shape[0]
+        has_not_word_aux = np.where(training_aux[:, 0] == 0)[0]
+        has_not_word_positive = np.count_nonzero(label[has_not_word_aux])
+        has_not_word_aux = has_not_word_aux.shape[0]
+        has_not_word_negative = has_not_word_aux - has_not_word_positive
+        has_word_negative = has_word_aux - has_word_positive
         has_word_total = has_word_positive + has_word_negative
         has_not_word_total = has_not_word_positive + has_not_word_negative
         total = has_word_total + has_not_word_total
+        if has_word_total ==0 or has_not_word_total ==0:
+            continue
         gini_has_word = 1 - ((has_word_positive / has_word_total) ** 2 + (has_word_negative / has_word_total) ** 2)
         gini_has_not_word = 1 - ((has_not_word_positive / has_not_word_total) ** 2 +
-        (has_not_word_negative / has_not_word_total) ** 2)
+                                     (has_not_word_negative / has_not_word_total) ** 2)
         gini = (has_word_total / total) * gini_has_word + (has_not_word_total / total) * gini_has_not_word
         if gini_index > gini:
             gini_index = gini

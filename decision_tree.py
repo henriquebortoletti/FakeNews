@@ -17,66 +17,82 @@ import time
 # https://learning.oreilly.com/library/view/data-mining-concepts/9780123814791/xhtml/ST0025_CHP008.html#ST0025_CHP008
 class DecisionTree:
     "Decision Tree algorithm"
-    tree = None
+    binaryTree = None
+    i = 0
 
-    def create_training_label(self, training, label, index):
-        has_word_index = np.nonzero(training[:, index])[0]
-        has_not_word_index = np.where(training[:, 0] == 0)[0]
-        has_word_training = training[has_word_index]
-        has_word_label = label[has_word_index]
-        has_not_word_training = training[has_not_word_index]
-        has_not_word_label = label[has_not_word_index]
+    def create_training_label(self, training, label, index, training_aux):
+        has_word_index = np.nonzero(training_aux[:, index])[0]
+        has_not_word_index = np.where(training_aux[:, index] == 0)[0]
+        has_word_training = []
+        has_word_label = []
+        has_not_word_training = []
+        has_not_word_label = []
+        for i in has_word_index:
+            has_word_training.append(training[i])
+            has_word_label.append(label[i])
+        for i in has_not_word_index:
+            has_not_word_training.append(training[i])
+            has_not_word_label.append(label[i])
         return has_word_training, has_word_label, has_not_word_training, has_not_word_label
 
-    def build_tree(self, training, label, removed_features=None):
-        if removed_features is None:
-            removed_features = []
+    def build_tree(self, training, label, removed_features):
+        self.i += 1
         tree = BinaryTree()
         major_class = sum(label)
-        if major_class == 0:
+        negative = (len(label) - major_class) / len(label)
+        positive = major_class / len(label)
+        if negative >= 0.9:
             tree.value = TRUE_NEWS
-            tree.frequency = label.shape[0]
+            tree.frequency = len(training)
             return tree
-        elif major_class == label.shape[0]:
+        elif positive >= 0.9:
             tree.value = FAKE_NEWS
-            tree.frequency = label.shape[0]
+            tree.frequency = len(training)
             return tree
-        elif len(removed_features) == training.shape[1] - 1:
-            if major_class >= label.size / 2:
+        elif len(removed_features) == (len(training[1]) - 1) or len(training) <= 576:
+            if negative > 0.5:
                 tree.value = TRUE_NEWS
-                tree.frequency = major_class
+                tree.frequency = len(training)
             else:
                 tree.value = FAKE_NEWS
-                tree.frequency = label.shape[0] - major_class
+                tree.frequency = len(training)
             return tree
-        gini_value, word = calculate_gini(training, label, removed_features)
-        hwt, hwl, hnwt, hnwl = self.create_training_label(training, label, word)
+        training_aux = np.asarray(training)
+        label_aux = np.asarray(label)
+        gini_value, word = calculate_gini(training_aux, label_aux, removed_features)
+        hwt, hwl, hnwt, hnwl = self.create_training_label(training, label, word, training_aux)
         removed_features.append(word)
-        if len(hwt) <= 2 or len(hnwt) <= 100:
-            if major_class >= len(label) / 2:
-                tree.value = TRUE_NEWS
-                tree.frequency = major_class
-            else:
-                tree.value = FAKE_NEWS
-                tree.frequency = label.shape[0] - major_class
-            return tree
+        training_aux = None
+        label_aux = None
         tree.value = word
         tree.gini = gini_value
         tree.frequency = len(hwt) + len(hnwt)
-        tree.insertHasWord(self.build_tree(hwt, hwl, removed_features))
-        tree.insertHasNoWord(self.build_tree(hnwt, hnwl, removed_features))
+        if len(hwt) > 3:
+            tree.insertHasWord(self.build_tree(hwt, hwl, removed_features))
+        if len(hnwt) > 3:
+            tree.insertHasNoWord(self.build_tree(hnwt, hnwl, removed_features))
+        if len(hwt) <= 3 or len(hnwt) <= 3:
+            if negative > 0.5:
+                tree.value = TRUE_NEWS
+            else:
+                tree.value = FAKE_NEWS
+            return tree
         return tree
 
     def fit(self, training, label):
+        self.i = 0
         init = time.time()
-        self.tree = self.build_tree(np.array(training), np.array(label))
+        self.binaryTree = None
+        removed_features =[]
+        self.binaryTree = self.build_tree(training, label,removed_features)
         end = time.time()
+        print(self.i)
         print(end - init)
 
     def predict(self, training):
         predictions = []
         for case in training:
-            predictions.append(self.tree.find(case))
+            predictions.append(self.binaryTree.find(case))
         return predictions
 
 
