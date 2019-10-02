@@ -6,6 +6,7 @@ from nltk.corpus import stopwords
 from string import punctuation
 import re
 import numpy as np
+from numba import jit
 
 META_DESCRIPTION = ['author', 'link', 'category', 'date of publication', 'number of tokens',
                     'number of words without punctuation',
@@ -22,7 +23,8 @@ meta_true_info, meta_false_info = meta_information()
 full_true_info, full_false_info = full_text()
 norm_true_info, norm_false_info = norm_text()
 stop_words = set(stopwords.words('portuguese') + list(punctuation))
-
+FAKE_NEWS =1
+TRUE_NEWS =0
 
 def word_filter(word):
     word = re.sub(r'[^\w\s]', '', word).lower()
@@ -84,8 +86,55 @@ def cross_validation(X, y, model):
             precision_1 = precision(matrix)
             recall_1 = recall(matrix)
             f1_score_1 = f1_score(precision_1, recall_1)
+            print("precision: " + str(np.round(precision_1, 2)))
+            print("recall: " + str(np.round(recall_1, 2)))
+            print("f1 score: " + str(np.round(f1_score_1, 2)))
         else:
             precision_1, recall_1, f1_score_1 = metrics(precision_1, recall_1, f1_score_1, matrix)
     print("precision: " + str(np.round(precision_1, 2)))
     print("recall: " + str(np.round(recall_1, 2)))
     print("f1 score: " + str(np.round(f1_score_1, 2)))
+
+#@jit(nopython=True)
+def calculate_gini(training,label,removed_features):
+    gini_index = 999
+    has_word_list = []
+    has_not_word_list = []
+    index = -1
+    for feature in range(len(training[0])):
+        if feature in removed_features:
+            continue
+        has_not_word_aux = []
+        has_word_aux = []
+        has_word_positive = 1
+        has_word_negative = 1
+        has_not_word_positive = 1
+        has_not_word_negative = 1
+        for case in range(len(training)):
+            has_word = training[case][feature]
+            is_positive = label[case]
+            if has_word != 0:
+                has_word_aux.append(case)
+                if is_positive == 1:
+                    has_word_positive = has_word_positive + 1
+                if is_positive != 1:
+                    has_word_negative = has_word_negative + 1
+            if has_word == 0:
+                has_not_word_aux.append(case)
+                if is_positive == 1:
+                    has_not_word_positive = has_not_word_positive + 1
+                if is_positive != 1:
+                    has_not_word_negative = has_not_word_negative + 1
+        has_word_total = has_word_positive + has_word_negative
+        has_not_word_total = has_not_word_positive + has_not_word_negative
+        total = has_word_total + has_not_word_total
+        gini_has_word = 1 - ((has_word_positive / has_word_total) ** 2 + (has_word_negative / has_word_total) ** 2)
+        gini_has_not_word = 1 - ((has_not_word_positive / has_not_word_total) ** 2 +
+                                 (has_not_word_negative / has_not_word_total) ** 2)
+        gini = (has_word_total / total) * gini_has_word + (has_not_word_total / total) * gini_has_not_word
+        if gini_index > gini:
+            gini_index = gini
+            has_not_word_list = has_not_word_aux
+            has_word_list = has_word_aux
+            index = feature
+    return gini_index, index, has_word_list, has_not_word_list

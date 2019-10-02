@@ -30,7 +30,7 @@ def bag_of_words(dataset):
 
 
 bag_of_word = bag_of_words(norm_true_info) + bag_of_words(norm_false_info)
-label = [0] * len(norm_true_info) + [1] * len(norm_false_info)
+label = [TRUE_NEWS] * len(norm_true_info) + [FAKE_NEWS] * len(norm_false_info)
 
 
 def n_grams(dataset,clazz ,n=2):
@@ -55,8 +55,8 @@ def n_grams(dataset,clazz ,n=2):
 
 def get_data_for_model(n=0):
     if n >=2:
-        true_grams, true_label = n_grams(norm_true_info,0,n)
-        fake_grams, fake_label = n_grams(norm_false_info,1,n)
+        true_grams, true_label = n_grams(norm_true_info,TRUE_NEWS,n)
+        fake_grams, fake_label = n_grams(norm_false_info,FAKE_NEWS,n)
         return true_grams+fake_grams,true_label+fake_label
     return bag_of_word, label
 
