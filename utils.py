@@ -47,7 +47,7 @@ def values(data, index):
 
 def accuracy(confusion_matrix):
     return (confusion_matrix[0][0] + confusion_matrix[1][1]) / (
-                confusion_matrix[0][0] + confusion_matrix[0][1] + confusion_matrix[1][0] + confusion_matrix[1][1])
+            confusion_matrix[0][0] + confusion_matrix[0][1] + confusion_matrix[1][0] + confusion_matrix[1][1])
 
 
 def precision(confusion_matrix):
@@ -86,11 +86,11 @@ def cross_validation(X, y, model):
             precision_1 = precision(matrix)
             recall_1 = recall(matrix)
             f1_score_1 = f1_score(precision_1, recall_1)
+        else:
+            precision_1, recall_1, f1_score_1 = metrics(precision_1, recall_1, f1_score_1, matrix)
             print("precision: " + str(np.round(precision_1, 2)))
             print("recall: " + str(np.round(recall_1, 2)))
             print("f1 score: " + str(np.round(f1_score_1, 2)))
-        else:
-            precision_1, recall_1, f1_score_1 = metrics(precision_1, recall_1, f1_score_1, matrix)
     print("precision: " + str(np.round(precision_1, 2)))
     print("recall: " + str(np.round(recall_1, 2)))
     print("f1 score: " + str(np.round(f1_score_1, 2)))
@@ -98,33 +98,18 @@ def cross_validation(X, y, model):
 #@jit(nopython=True)
 def calculate_gini(training,label,removed_features):
     gini_index = 999
-    has_word_list = []
-    has_not_word_list = []
+    has_word_list = None
+    has_not_word_list = None
     index = -1
     for feature in range(len(training[0])):
         if feature in removed_features:
             continue
-        has_not_word_aux = []
-        has_word_aux = []
-        has_word_positive = 1
-        has_word_negative = 1
-        has_not_word_positive = 1
-        has_not_word_negative = 1
-        for case in range(len(training)):
-            has_word = training[case][feature]
-            is_positive = label[case]
-            if has_word != 0:
-                has_word_aux.append(case)
-                if is_positive == 1:
-                    has_word_positive = has_word_positive + 1
-                if is_positive != 1:
-                    has_word_negative = has_word_negative + 1
-            if has_word == 0:
-                has_not_word_aux.append(case)
-                if is_positive == 1:
-                    has_not_word_positive = has_not_word_positive + 1
-                if is_positive != 1:
-                    has_not_word_negative = has_not_word_negative + 1
+        has_word_aux = np.nonzero(training[:,feature])[0]
+        has_not_word_aux = np.where(training[:,0] == 0)[0]
+        has_word_positive = np.count_nonzero(np.array(label)[has_word_aux]) +1
+        has_word_negative = len(has_word_aux) - has_word_positive +1
+        has_not_word_positive = np.count_nonzero(np.array(label)[has_not_word_aux]) +1
+        has_not_word_negative = len(has_not_word_aux) - has_not_word_positive+1
         has_word_total = has_word_positive + has_word_negative
         has_not_word_total = has_not_word_positive + has_not_word_negative
         total = has_word_total + has_not_word_total
@@ -138,3 +123,4 @@ def calculate_gini(training,label,removed_features):
             has_word_list = has_word_aux
             index = feature
     return gini_index, index, has_word_list, has_not_word_list
+

@@ -45,14 +45,11 @@ class DecisionTree:
                 tree.value = FAKE_NEWS
                 tree.frequency = label.shape[0] - major_class
             return tree
-        init =time.time()
         gini_value, word, has_word_list, has_not_word_list = calculate_gini(training, label, removed_features)
-        end = time.time()
-        print(end-init)
         hwt, hwl = self.create_training_label(training, label, has_word_list)
         hnwt, hnwl = self.create_training_label(training, label, has_not_word_list)
         removed_features.append(word)
-        if len(hwt) <= 0 or len(hnwt) <= 100:
+        if len(hwt) <= 2 or len(hnwt) <= 100:
             if major_class >= len(label) / 2:
                 tree.value = TRUE_NEWS
                 tree.frequency = major_class
@@ -68,8 +65,10 @@ class DecisionTree:
         return tree
 
     def fit(self, training, label):
-        teste = np.array(training)
+        init =time.time()
         self.tree = self.build_tree(np.array(training), np.array(label))
+        end = time.time()
+        print(end-init)
 
     def predict(self, training):
         predictions = []
