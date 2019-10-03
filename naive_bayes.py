@@ -26,12 +26,9 @@ class NaiveBayes:
             number_of_c = label.count(c)
             self.prior[c] = number_of_c / number_of_documents
             words_sum = sum(words_in_classes[c])
-            min =0.1
             for i in range(len(training[0])):
                 word = words_in_classes[c][i]
-                self.probabilities[c][i] = (word +1) /(words_sum + len(training[0]))
-                if self.probabilities[c][i] < min:
-                    min = self.probabilities[c][i]
+                self.probabilities[c][i] = (word +1) /(words_sum)
 
     def predict(self, training):
         predictions = []

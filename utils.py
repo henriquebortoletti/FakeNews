@@ -6,7 +6,6 @@ from nltk.corpus import stopwords
 from string import punctuation
 import re
 import numpy as np
-from numba import jit
 
 META_DESCRIPTION = ['author', 'link', 'category', 'date of publication', 'number of tokens',
                     'number of words without punctuation',
@@ -46,85 +45,72 @@ def values(data, index):
     return resp
 
 
+# negative = True News
+# positive = Fake News
+
 def accuracy(confusion_matrix):
     return (confusion_matrix[0][0] + confusion_matrix[1][1]) / (
             confusion_matrix[0][0] + confusion_matrix[0][1] + confusion_matrix[1][0] + confusion_matrix[1][1])
 
 
 def precision(confusion_matrix):
-    return confusion_matrix[1][1] / (confusion_matrix[1][1] + confusion_matrix[0][1])
+    precision_negative = confusion_matrix[0][0] / (confusion_matrix[0][0] + confusion_matrix[1][0])
+    precision_positive = confusion_matrix[1][1] / (confusion_matrix[1][1] + confusion_matrix[0][1])
+    return precision_negative, precision_positive
 
 
 def recall(confusion_matrix):
-    return confusion_matrix[1][1] / (confusion_matrix[1][1] + confusion_matrix[1][0])
+    recall_negative = confusion_matrix[0][0] / (confusion_matrix[0][0] + confusion_matrix[0][1])
+    recall_positive = confusion_matrix[1][1] / (confusion_matrix[1][1] + confusion_matrix[1][0])
+    return recall_negative, recall_positive
 
 
 def f1_score(precision_value, recall_value):
     return 2 * (precision_value * recall_value) / (precision_value + recall_value)
 
 
-def metrics(precision_1, recall_1, f1_score_1, confusion_matrix_2):
-    precision_2 = precision(confusion_matrix_2)
-    recall_2 = recall(confusion_matrix_2)
-    f1_score_2 = f1_score(precision_2, recall_2)
-    return (precision_1 + precision_2) / 2, (recall_1 + recall_2) / 2, (f1_score_1 + f1_score_2) / 2
+def metrics(confusion_matrix):
+    precision_true_news, precision_fake_news = precision(confusion_matrix)
+    recall_true_news, recall_fake_news = recall(confusion_matrix)
+    f1_score_true_news = f1_score(precision_true_news, recall_true_news)
+    f1_score_fake_news = f1_score(precision_fake_news, recall_fake_news)
+    accuracy_news = accuracy(confusion_matrix)
+    print("True News Metrics")
+    print("Precision: " + str(round(precision_true_news, 2)))
+    print("Recall: " + str(round(recall_true_news, 2)))
+    print("F1 Score: " + str(round(f1_score_true_news, 2)))
+    print("Fake News Metrics")
+    print("Precision: " + str(round(precision_fake_news, 2)))
+    print("Recall: " + str(round(recall_fake_news, 2)))
+    print("F1 Score: " + str(round(f1_score_fake_news, 2)))
+    print("Model Metrics")
+    print("Model Accuracy: " + str(round(accuracy_news, 2)))
 
 
 def cross_validation(X, y, model):
     cv = StratifiedKFold(n_splits=5, random_state=42, shuffle=False)
-    precision_1 = 0
-    recall_1 = 0
-    f1_score_1 = 0
+    k = 0
+    matrix = np.zeros((2, 2))
+    training_time_total =0
+    print(model.__doc__[0:30])
     for train_index, test_index in cv.split(X, y):
+        k += 1
         X_train, X_test, y_train, y_test = \
             values(X, train_index), values(X, test_index), values(y, train_index), values(y, test_index)
-        print("trainning")
+        print("Trainning Fold: " + str(k))
+        init = time.time()
         model.fit(X_train, y_train)
-        print("predicting")
+        end = time.time() - init
+        training_time_total +=end
+        print("Time spent training: " + str(round(end, 2)))
+        print("Predicting Fold: " + str(k))
+        init = time.time()
         predictions = model.predict(X_test)
-        matrix = confusion_matrix(y_test, predictions)
-        if precision_1 == 0 and recall_1 == 0 and f1_score_1 == 0:
-            precision_1 = precision(matrix)
-            recall_1 = recall(matrix)
-            f1_score_1 = f1_score(precision_1, recall_1)
-            print("precision: " + str(np.round(precision_1, 2)))
-            print("recall: " + str(np.round(recall_1, 2)))
-            print("f1 score: " + str(np.round(f1_score_1, 2)))
-        else:
-            precision_1, recall_1, f1_score_1 = metrics(precision_1, recall_1, f1_score_1, matrix)
-            print("precision: " + str(np.round(precision_1, 2)))
-            print("recall: " + str(np.round(recall_1, 2)))
-            print("f1 score: " + str(np.round(f1_score_1, 2)))
-    print("precision: " + str(np.round(precision_1, 2)))
-    print("recall: " + str(np.round(recall_1, 2)))
-    print("f1 score: " + str(np.round(f1_score_1, 2)))
-
-
-# @jit(nopython=True)
-def calculate_gini(training_aux, label, removed_features):
-    gini_index = 999
-    index = 0
-    for feature in range(training_aux.shape[1]):
-        if feature in removed_features:
-            continue
-        has_word_aux = np.nonzero(training_aux[:, feature])[0]
-        has_word_positive = np.count_nonzero(label[has_word_aux])
-        has_word_aux = has_word_aux.shape[0]
-        has_not_word_aux = np.where(training_aux[:, 0] == 0)[0]
-        has_not_word_positive = np.count_nonzero(label[has_not_word_aux])
-        has_not_word_aux = has_not_word_aux.shape[0]
-        has_not_word_negative = has_not_word_aux - has_not_word_positive
-        has_word_negative = has_word_aux - has_word_positive
-        has_word_total = has_word_positive + has_word_negative
-        has_not_word_total = has_not_word_positive + has_not_word_negative
-        total = has_word_total + has_not_word_total
-        if has_word_total ==0 or has_not_word_total ==0:
-            continue
-        gini_has_word = 1 - ((has_word_positive / has_word_total) ** 2 + (has_word_negative / has_word_total) ** 2)
-        gini_has_not_word = 1 - ((has_not_word_positive / has_not_word_total) ** 2 +
-                                     (has_not_word_negative / has_not_word_total) ** 2)
-        gini = (has_word_total / total) * gini_has_word + (has_not_word_total / total) * gini_has_not_word
-        if gini_index > gini:
-            gini_index = gini
-            index = feature
-    return gini_index, index
+        end = time.time() - init
+        print("Time spent predicting: " + str(round(end, 2)))
+        print()
+        matrix += confusion_matrix(y_test, predictions)
+    metrics(matrix)
+    print()
+    print("Training time spent: "+str(round(training_time_total,2)))
+    print("Training time average per fold: "+str(round(training_time_total/5,2)))

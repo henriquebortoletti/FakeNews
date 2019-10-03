@@ -3,16 +3,13 @@ from utils import *
 from sklearn.tree import DecisionTreeClassifier
 from utils import cross_validation
 from BinaryTree import BinaryTree
+from gini_index import calculate_gini
 import numpy as np
 import time
 
 
 # https://dataaspirant.com/2017/01/30/how-decision-tree-algorithm-works/
 # https://www.geeksforgeeks.org/decision-tree-introduction-example/
-# https://en.wikipedia.org/wiki/Decision_tree
-# https://www.youtube.com/watch?v=Qdi0GBWrDO8
-# https://medium.com/deep-math-machine-learning-ai/chapter-4-decision-trees-algorithms-b93975f7a1f1
-# https://machinelearningmastery.com/implement-decision-tree-algorithm-scratch-python/
 # http://www.csun.edu/~twang/595DM/Slides/Week4.pdf
 # https://learning.oreilly.com/library/view/data-mining-concepts/9780123814791/xhtml/ST0025_CHP008.html#ST0025_CHP008
 class DecisionTree:
@@ -94,10 +91,6 @@ class DecisionTree:
 
 
 X, y = get_data_for_model()
-print("start")
-init = time.time()
-clf = DecisionTreeClassifier(criterion="gini")
-#clf = DecisionTree()
+#clf = DecisionTreeClassifier(criterion="gini")
+clf = DecisionTree()
 cross_validation(X, y, clf)
-end = time.time() - init
-print(end)
