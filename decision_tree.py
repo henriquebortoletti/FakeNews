@@ -1,11 +1,9 @@
-from pre_processing import get_data_for_model
-from utils import *
-from sklearn.tree import DecisionTreeClassifier
-from utils import cross_validation
+import numpy as np
+
 from BinaryTree import BinaryTree
 from gini_index import calculate_gini
-import numpy as np
-import time
+from utils import *
+from validation import extract_metrics
 
 
 # https://dataaspirant.com/2017/01/30/how-decision-tree-algorithm-works/
@@ -46,7 +44,7 @@ class DecisionTree:
             tree.value = FAKE_NEWS
             tree.frequency = len(training)
             return tree
-        elif len(removed_features) == (len(training[1]) - 1) or len(training) <= 576:#500 samples 0.77 de precisao
+        elif len(removed_features) == (len(training[1]) - 1) or len(training) <= 576:  # 500 samples 0.77 de precisao 37% do fold
             if negative > 0.5:
                 tree.value = TRUE_NEWS
                 tree.frequency = len(training)
@@ -59,8 +57,6 @@ class DecisionTree:
         gini_value, word = calculate_gini(training_aux, label_aux, removed_features)
         hwt, hwl, hnwt, hnwl = self.create_training_label(training, label, word, training_aux)
         removed_features.append(word)
-        training_aux = None
-        label_aux = None
         tree.value = word
         tree.gini = gini_value
         tree.frequency = len(hwt) + len(hnwt)
@@ -73,15 +69,13 @@ class DecisionTree:
                 tree.value = TRUE_NEWS
             else:
                 tree.value = FAKE_NEWS
-            return tree
         return tree
 
     def fit(self, training, label):
         self.i = 1
         self.binaryTree = None
-        removed_features =[]
-        self.binaryTree = self.build_tree(training, label,removed_features)
-        print(self.i)
+        self.binaryTree = self.build_tree(training, label, [])
+        print("Itens na árvore: " + str(self.i))
 
     def predict(self, training):
         predictions = []
@@ -90,7 +84,5 @@ class DecisionTree:
         return predictions
 
 
-X, y = get_data_for_model()
-#clf = DecisionTreeClassifier(criterion="gini")
-clf = DecisionTree()
-cross_validation(X, y, clf)
+extract_metrics(DecisionTree(),"Decision Tree")
+

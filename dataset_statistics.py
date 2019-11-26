@@ -9,13 +9,15 @@ import re
 
 def date_histogram():
     true_hist = create_date_histogram(meta_true_info)
-    false_hist = create_date_histogram(meta_false_info)
+    #false_hist = create_date_histogram(meta_false_info)
 
-    df = pd.Series(true_hist)
+    df = pd.Series({"Hash 1" :6,
+                    "Hash 2": 4,
+                    "Hash 3": 2})
 
     plt.bar(range(len(df)), df.values, align='center')
 
-    plt.xticks(range(len(df)), df.index.values, size='small', rotation='45', fontsize=16)
+    plt.xticks(range(len(df)), df.index.values, size='small', rotation='45', fontsize=18)
     xlocs = [i for i in range(0, len(df.values) + 1)]
 
     for i, v in enumerate(df.values):
@@ -66,7 +68,6 @@ def convert_date(date):
     for month in months:
         if month in date:
             i = months.index(month) + 1
-    year = date[len(date) - 1]
     return date_format(i, date[len(date) - 1])
 
 
@@ -174,7 +175,7 @@ def words_in_base(base, name):
 
 def tree_map(dict, title):
     # Accent, Accent_r, Blues, Blues_r, BrBG, BrBG_r, BuGn, BuGn_r, BuPu, BuPu_r, CMRmap, CMRmap_r, Dark2, Dark2_r, GnBu, GnBu_r, Greens, Greens_r, Greys, Greys_r, OrRd, OrRd_r, Oranges, Oranges_r, PRGn, PRGn_r, Paired, Paired_r, Pastel1, Pastel1_r, Pastel2, Pastel2_r, PiYG, PiYG_r, PuBu, PuBuGn, PuBuGn_r, PuBu_r, PuOr, PuOr_r, PuRd, PuRd_r, Purples, Purples_r, RdBu, RdBu_r, RdGy, RdGy_r, RdPu, RdPu_r, RdYlBu, RdYlBu_r, RdYlGn, RdYlGn_r, Reds, Reds_r, Set1, Set1_r, Set2, Set2_r, Set3, Set3_r, Spectral, Spectral_r, Wistia, Wistia_r, YlGn, YlGnBu, YlGnBu_r, YlGn_r, YlOrBr, YlOrBr_r, YlOrRd, YlOrRd_r, afmhot, afmhot_r, autumn, autumn_r, binary, binary_r, bone, bone_r, brg, brg_r, bwr, bwr_r, cividis, cividis_r, cool, cool_r, coolwarm, coolwarm_r, copper, copper_r, cubehelix, cubehelix_r, flag, flag_r, gist_earth, gist_earth_r, gist_gray, gist_gray_r, gist_heat, gist_heat_r, gist_ncar, gist_ncar_r, gist_rainbow, gist_rainbow_r, gist_stern, gist_stern_r, gist_yarg, gist_yarg_r, gnuplot, gnuplot2, gnuplot2_r, gnuplot_r, gray, gray_r, hot, hot_r, hsv, hsv_r, inferno, inferno_r, jet, jet_r, magma, magma_r, nipy_spectral, nipy_spectral_r, ocean, ocean_r, pink, pink_r, plasma, plasma_r, prism, prism_r, rainbow, rainbow_r, seismic, seismic_r, spring, spring_r, summer, summer_r, tab10, tab10_r, tab20, tab20_r, tab20b, tab20b_r, tab20c, tab20c_r, terrain, terrain_r, twilight, twilight_r, twilight_shifted, twilight_shifted_r, viridis, viridis_r, winter, winter_r
-    wc = WordCloud(background_color="black", max_words=350, width=500, height=500, margin=1, max_font_size=45,
+    wc = WordCloud(background_color="white", max_words=350, width=500, height=500, margin=1, max_font_size=45,
                    colormap='winter')
     wc.generate_from_frequencies(frequencies=dict)
     plt.imshow(wc, interpolation="bilinear")
@@ -183,5 +184,6 @@ def tree_map(dict, title):
 
 
 if __name__ == "__main__":
-    words_in_base(full_true_info,"true-words")
-    words_in_base(full_false_info,"false-words")
+    #words_in_base(full_true_info,"true-words")
+    #words_in_base(full_false_info,"false-words")
+    words_in_base(full_text()[0],'teset')

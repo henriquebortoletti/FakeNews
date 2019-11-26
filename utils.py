@@ -1,11 +1,7 @@
-from sklearn.model_selection import StratifiedKFold
-from sklearn.metrics import confusion_matrix
-from sklearn.model_selection import train_test_split
-from dataset_reader import *
-from nltk.corpus import stopwords
-from string import punctuation
 import re
-import numpy as np
+from string import punctuation
+from nltk.corpus import stopwords
+from dataset_reader import *
 
 META_DESCRIPTION = ['author', 'link', 'category', 'date of publication', 'number of tokens',
                     'number of words without punctuation',
@@ -27,6 +23,7 @@ TRUE_NEWS = 0
 
 
 def word_filter(word):
+    #a regex é feita para palavras que possuem a pontuação colada por exemplo henrique,
     word = re.sub(r'[^\w\s]', '', word).lower()
     if word not in stop_words and word.isalpha():
         return word
@@ -34,15 +31,6 @@ def word_filter(word):
         return ''
 
 
-def split_data(bag_of_words, label):
-    return train_test_split(bag_of_words, label, test_size=0.33, random_state=42)
-
-
-def values(data, index):
-    resp = []
-    for i in index:
-        resp.append(data[i])
-    return resp
 
 
 # negative = True News
@@ -86,31 +74,3 @@ def metrics(confusion_matrix):
     print("Model Metrics")
     print("Model Accuracy: " + str(round(accuracy_news, 2)))
 
-
-def cross_validation(X, y, model):
-    cv = StratifiedKFold(n_splits=5, random_state=42, shuffle=False)
-    k = 0
-    matrix = np.zeros((2, 2))
-    training_time_total =0
-    print(model.__doc__[0:30])
-    for train_index, test_index in cv.split(X, y):
-        k += 1
-        X_train, X_test, y_train, y_test = \
-            values(X, train_index), values(X, test_index), values(y, train_index), values(y, test_index)
-        print("Trainning Fold: " + str(k))
-        init = time.time()
-        model.fit(X_train, y_train)
-        end = time.time() - init
-        training_time_total +=end
-        print("Time spent training: " + str(round(end, 2)))
-        print("Predicting Fold: " + str(k))
-        init = time.time()
-        predictions = model.predict(X_test)
-        end = time.time() - init
-        print("Time spent predicting: " + str(round(end, 2)))
-        print()
-        matrix += confusion_matrix(y_test, predictions)
-    metrics(matrix)
-    print()
-    print("Training time spent: "+str(round(training_time_total,2)))
-    print("Training time average per fold: "+str(round(training_time_total/5,2)))
