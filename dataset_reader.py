@@ -1,6 +1,8 @@
 import os
 import time
 
+#Posição da base de dados que vai ser lida
+#A função desse script é apenas ler a base de dados
 BASE_FULL_TEXT_DIR = "../Fake.br-Corpus/full_texts/"
 BASE_NORMALIZED_TEXT_DIR = "../Fake.br-Corpus/size_normalized_texts/"
 FULL_DIR_TRUE = os.path.join(BASE_FULL_TEXT_DIR, "true")

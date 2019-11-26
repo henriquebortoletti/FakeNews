@@ -7,13 +7,10 @@ from wordcloud import WordCloud
 import multidict as multidict
 import re
 
-def date_histogram():
-    true_hist = create_date_histogram(meta_true_info)
-    #false_hist = create_date_histogram(meta_false_info)
 
-    df = pd.Series({"Hash 1" :6,
-                    "Hash 2": 4,
-                    "Hash 3": 2})
+# Gera o gráfico do histograma das notícias
+def date_histogram(hist):
+    df = pd.Series(hist)
 
     plt.bar(range(len(df)), df.values, align='center')
 
@@ -34,6 +31,7 @@ def take_data(file, index):
     return file.split('\n')[META_DESCRIPTION.index(index)]
 
 
+# Gera o histograma das notícias e ajusta as datas, pois essas não seguem um padrão
 def create_date_histogram(base):
     serie = []
     hist = {}
@@ -80,6 +78,7 @@ def date_format(month, year):
         return '1° sem' + '/' + str(year)
 
 
+# Conta as categorias de cada texto
 def categories_statistics(base):
     categories = {}
     for file in base.values():
@@ -91,18 +90,17 @@ def categories_statistics(base):
     return categories
 
 
+# Conta o número de autores anonimos por categoria
 def unknow_per_category(base):
     dict = {}
     for file in base.values():
         if take_data(file, 'author') == 'None':
             category = take_data(file, 'category')
-            if category not in dict.keys():
-                dict[category] = 1
-            else:
-                dict[category] += 1
+            value = dict.get(category, 0)
+            dict[category] = value + 1
     return dict
 
-
+#imprime as caracaterísticas dos autores
 def authors_statistics():
     true = unknow_per_category(meta_true_info)
     fake = unknow_per_category(meta_false_info)
@@ -115,7 +113,7 @@ def authors_statistics():
     print("Number of fake news per category")
     print(categories_statistics(meta_false_info))
 
-
+#Extrai a fonte das notícias
 def links(base):
     dict = {}
     for file in base.values():
@@ -127,7 +125,7 @@ def links(base):
     print(dict)
     return dict
 
-
+#Extrai o número de textos em cada categoria
 def texts_in_categories(meta_base):
     dict = {}
     for file in meta_base:
@@ -139,7 +137,7 @@ def texts_in_categories(meta_base):
             dict[category].append(file + '.txt')
     return dict
 
-
+#Número de palavras por categoria
 def words_in_categories(meta_base, base, suffix):
     files_names = texts_in_categories(meta_base)
     dict = {}
@@ -158,7 +156,7 @@ def words_in_categories(meta_base, base, suffix):
     for category in dict:
         tree_map(dict[category], suffix + '_' + category)
 
-
+#Número de palavras na base, é usado para o pré-processamento do mapa de palavras
 def words_in_base(base, name):
     fullTermsDict = multidict.MultiDict()
     words = {}
@@ -172,7 +170,7 @@ def words_in_base(base, name):
         fullTermsDict.add(key, words[key])
     tree_map(fullTermsDict, name)
 
-
+#Gera o mapa de palavras utilizando a biblioteca wordCloud
 def tree_map(dict, title):
     # Accent, Accent_r, Blues, Blues_r, BrBG, BrBG_r, BuGn, BuGn_r, BuPu, BuPu_r, CMRmap, CMRmap_r, Dark2, Dark2_r, GnBu, GnBu_r, Greens, Greens_r, Greys, Greys_r, OrRd, OrRd_r, Oranges, Oranges_r, PRGn, PRGn_r, Paired, Paired_r, Pastel1, Pastel1_r, Pastel2, Pastel2_r, PiYG, PiYG_r, PuBu, PuBuGn, PuBuGn_r, PuBu_r, PuOr, PuOr_r, PuRd, PuRd_r, Purples, Purples_r, RdBu, RdBu_r, RdGy, RdGy_r, RdPu, RdPu_r, RdYlBu, RdYlBu_r, RdYlGn, RdYlGn_r, Reds, Reds_r, Set1, Set1_r, Set2, Set2_r, Set3, Set3_r, Spectral, Spectral_r, Wistia, Wistia_r, YlGn, YlGnBu, YlGnBu_r, YlGn_r, YlOrBr, YlOrBr_r, YlOrRd, YlOrRd_r, afmhot, afmhot_r, autumn, autumn_r, binary, binary_r, bone, bone_r, brg, brg_r, bwr, bwr_r, cividis, cividis_r, cool, cool_r, coolwarm, coolwarm_r, copper, copper_r, cubehelix, cubehelix_r, flag, flag_r, gist_earth, gist_earth_r, gist_gray, gist_gray_r, gist_heat, gist_heat_r, gist_ncar, gist_ncar_r, gist_rainbow, gist_rainbow_r, gist_stern, gist_stern_r, gist_yarg, gist_yarg_r, gnuplot, gnuplot2, gnuplot2_r, gnuplot_r, gray, gray_r, hot, hot_r, hsv, hsv_r, inferno, inferno_r, jet, jet_r, magma, magma_r, nipy_spectral, nipy_spectral_r, ocean, ocean_r, pink, pink_r, plasma, plasma_r, prism, prism_r, rainbow, rainbow_r, seismic, seismic_r, spring, spring_r, summer, summer_r, tab10, tab10_r, tab20, tab20_r, tab20b, tab20b_r, tab20c, tab20c_r, terrain, terrain_r, twilight, twilight_r, twilight_shifted, twilight_shifted_r, viridis, viridis_r, winter, winter_r
     wc = WordCloud(background_color="white", max_words=350, width=500, height=500, margin=1, max_font_size=45,
@@ -184,6 +182,5 @@ def tree_map(dict, title):
 
 
 if __name__ == "__main__":
-    #words_in_base(full_true_info,"true-words")
-    #words_in_base(full_false_info,"false-words")
-    words_in_base(full_text()[0],'teset')
+    date_histogram(create_date_histogram(meta_true_info))
+    words_in_base(full_text()[0], 'teste')

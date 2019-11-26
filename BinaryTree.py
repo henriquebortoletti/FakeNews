@@ -29,7 +29,7 @@ class BinaryTree:
             self.has_word.showTree()
 
     def find(self, case):
-        if self.has_word is None and self.has_no_word is None:
+        if self.has_word is None or self.has_no_word is None:
             return self.value
         if case[self.value] != 0:
             return self.has_word.find(case)

@@ -11,6 +11,8 @@ class NaiveBayes:
     probabilities = {}
     prior = {}
 
+    #transforma o conjunto training em apenas um mapa com duas posições, true e false.
+    # Isso foi feito para acelerar os calculos
     def words_in_class(self, training, label):
         words_in_class = {}
         for i in range(len(training)):
@@ -28,7 +30,7 @@ class NaiveBayes:
             number_of_c = label.count(c)
             self.prior[c] = number_of_c / number_of_documents
             words_sum = sum(words_in_classes[c])
-            for i in range(len(training[0])):
+            for i in range(len(training[0])): #len(training[0]) = número de colunas/features/palavras
                 word = words_in_classes[c][i]
                 self.probabilities[c][i] = (word + 1) / (words_sum)
 

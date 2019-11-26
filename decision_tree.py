@@ -14,7 +14,7 @@ class DecisionTree:
     "Decision Tree algorithm"
     binaryTree = None
     i = 0
-
+    #Esse metodo faz o split do conjunto de dados
     def create_training_label(self, training, label, index, training_aux):
         has_word_index = np.nonzero(training_aux[:, index])[0]
         has_not_word_index = np.where(training_aux[:, index] == 0)[0]
@@ -36,6 +36,7 @@ class DecisionTree:
         major_class = sum(label)
         negative = (len(label) - major_class) / len(label)
         positive = major_class / len(label)
+        #Poda da arvoré baseada nesse conjunto de IFs
         if negative >= 0.9:
             tree.value = TRUE_NEWS
             tree.frequency = len(training)
@@ -52,19 +53,26 @@ class DecisionTree:
                 tree.value = FAKE_NEWS
                 tree.frequency = len(training)
             return tree
-        training_aux = np.asarray(training)
-        label_aux = np.asarray(label)
+
+        training_aux = np.array(training)
+        label_aux = np.array(label)
         gini_value, word = calculate_gini(training_aux, label_aux, removed_features)
         hwt, hwl, hnwt, hnwl = self.create_training_label(training, label, word, training_aux)
+        training_aux = None
+        label_aux = None
         removed_features.append(word)
         tree.value = word
         tree.gini = gini_value
         tree.frequency = len(hwt) + len(hnwt)
         if len(hwt) > 3:
             tree.insertHasWord(self.build_tree(hwt, hwl, removed_features))
+            hwt = None
+            hwl = None
         if len(hnwt) > 3:
             tree.insertHasNoWord(self.build_tree(hnwt, hnwl, removed_features))
-        if len(hwt) <= 3 or len(hnwt) <= 3:
+            hnwt = None
+            hnwl =None
+        if hwt is not None or hnwt is not None:
             if negative > 0.5:
                 tree.value = TRUE_NEWS
             else:

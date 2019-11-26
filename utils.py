@@ -23,14 +23,12 @@ TRUE_NEWS = 0
 
 
 def word_filter(word):
-    #a regex é feita para palavras que possuem a pontuação colada por exemplo henrique,
+    #a regex é feita para remover a pontuação das palavras
     word = re.sub(r'[^\w\s]', '', word).lower()
     if word not in stop_words and word.isalpha():
         return word
     else:
         return ''
-
-
 
 
 # negative = True News

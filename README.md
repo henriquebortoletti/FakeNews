@@ -1,1 +1,4 @@
 # FakeNews
+
+Fake news has grown across social networks influencing what people think about economy, health and politics. It simulates the content of authentic news, but lacks the steps for assuring the accuracy of a report and its credibility. Because of the high-speed of fake news shares, researches are engaged to create new methods to identify this kind of information. Most of these techniques use classifiers algorithms to label a document as fake or authentic. In this paper, we used the algorithms, Naive Bayes, Decision Tree and Random Forest to classify Portuguese news. The results found in the state of art, motivated us to apply the techniques bag-of-words and n-grams to represent the dataset. In addition to that, we decided to use the hashing trick to resolve the sparsity of the feature vector and to measure its impact in the algorithms.
+
